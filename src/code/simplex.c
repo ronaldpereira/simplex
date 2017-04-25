@@ -2,14 +2,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+void reader()
+{
+	
+}
+
 int main(int argc, char* argv[])
 {
-    FILE *entrada, *saida;
-    entrada = fopen(argv[1], "r");
-    saida = fopen(argv[2], "w");
+    FILE *input, *output;
+    input = fopen(argv[1], "r");
+    output = fopen(argv[2], "w");
 
-    fclose(entrada);
-    fclose(saida);
+    fclose(input);
+    fclose(output);
 
     return 0;
 }
