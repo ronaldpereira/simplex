@@ -9,3 +9,6 @@ clean:
 
 test:
 	make all && make run && make clean
+
+valgrind:
+	make all && valgrind ./simplex ../test/input.txt ../test/output.txt
