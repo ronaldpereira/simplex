@@ -1,7 +1,7 @@
 Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)
 
 Author: Ronald Davi Rodrigues Pereira
-Student of BS in Computer Science in Federal University of Minas Gerais
+BS student of Computer Science in Federal University of Minas Gerais
 
 Option Menu:
 	1 - Apply the Simplex algorithm (using Bland's Law) and outputs the optimized solution or a certificate of illimitability or inviability
@@ -9,6 +9,6 @@ Option Menu:
 
 Insert a mode > 1
 3 x 4
-1.00000 2.00000 3.00000 0.00000 
-1.00000 1.00000 1.00000 2.00000 
+1.00000 2.00000 3.00000 0.00000
+1.00000 1.00000 1.00000 2.00000
 0.00000 -1.00000 3.00000 9.00000 
