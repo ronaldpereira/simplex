@@ -139,13 +139,13 @@ int main(int argc, char* argv[])
 
     dimensionCounter(input, &lines, &columns); // Function to count the input matrix dimension
 
-    matrix = matrixAllocation(lines, columns);
+    matrix = matrixAllocation(lines, columns); // Function to allocate the matrix
 
-    matrixBuilder(input, matrix);
+    matrixBuilder(input, matrix); // Function to build the matrix from the input file
 
     printMatrix(matrix, lines, columns);
 
-    matrixDisallocation(matrix, lines);
+    matrixDisallocation(matrix, lines); // Function to free the allocated space for the matrix
     fclose(input);
     fclose(output);
 
