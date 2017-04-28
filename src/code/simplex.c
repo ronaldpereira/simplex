@@ -10,6 +10,8 @@ void inputReader(char **stream)
 
     *stream = (char*) malloc(sizeof(char));
 
+    printf("Insert the matrix input (including the primal or dual mode):\n> ");
+
     for(i = 0; ; i++, j++)
     {
         scanf("%c", &token);
@@ -174,15 +176,20 @@ int main()
 
     printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited LP, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode > ");
 
-    scanf("%d\n", &mode);
+    scanf("%d", &mode);
     printf("%d\n", mode);
-
-    fflush(stdin);
+    getc(stdin);
 
     inputReader(&input);
 
     if(mode == 2)
+    {
         mode = detectPrimalDual(&input);
+        if(mode == 0)
+            printf("Solving mode: Primal\n");
+        else if(mode == 1)
+            printf("Solving mode: Dual\n");
+    }
 
     dimensionCounter(input, &lines, &columns); // Function to count the input matrix dimension
 
