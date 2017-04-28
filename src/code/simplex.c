@@ -3,15 +3,50 @@
 #include <stdbool.h>
 #include <string.h>
 
-void dimensionCounter(FILE *input, int *lines, int *columns)
+void inputReader(char **stream)
+{
+    char token;
+    int i, j = 1;
+
+    *stream = (char*) malloc(sizeof(char));
+
+    for(i = 0; ; i++, j++)
+    {
+        scanf("%c", &token);
+        if(token == '\n')
+            break;
+
+        (*stream)[i] = token;
+        *stream = (char*) realloc(*stream, (j+1)*sizeof(char));
+    }
+    (*stream)[i] = '\0';
+}
+
+bool detectPrimalDual(char **input)
+{
+    bool mode; // 0 is Primal, 1 is Dual
+
+    if((*input)[0] == 'P' || (*input)[0] == 'p')
+        mode = 0;
+
+    else if((*input)[0] == 'D' || (*input)[0] == 'd')
+        mode = 1;
+
+    return mode;
+}
+
+void dimensionCounter(char *input, int *lines, int *columns)
 {
     char c;
-    int flag = 0;
+    int flag = 0, i = 0;
     *lines = -1;
     *columns = 1;
 
-    while(fscanf((input), "%c", &c) != EOF)
+    while(input[i] != '\0')
     {
+        c = input[i];
+        i++;
+
         if(c == '{')
             (*lines)++;
 
@@ -19,7 +54,8 @@ void dimensionCounter(FILE *input, int *lines, int *columns)
         {
             while(1)
             {
-                fscanf((input), "%c", &c);
+                c = input[i];
+                i++;
 
                 if(c == '}')
                 {
@@ -57,17 +93,16 @@ double **matrixDisallocation(double **matrix, int lines)
     return NULL;
 }
 
-double **matrixBuilder(FILE *input, double **matrix)
+double **matrixBuilder(char *input, double **matrix)
 {
-    int i = 0, j = 0, k = 0;
+    int i = 0, j = 0, k = 0, l = 0;
     bool neg = 0;
     char c, num[50];
 
-    fseek(input, 0, SEEK_SET); // Get back to the beggining of the file
-
     while(1)
     {
-        fscanf(input, "%c", &c);
+        c = input[l];
+        l++;
 
         if(((int)c >= 48 && (int) c <= 57) || c == '.') // C is a number  or a dot
         {
@@ -103,7 +138,9 @@ double **matrixBuilder(FILE *input, double **matrix)
             i++;
             j = 0;
 
-            fscanf(input, "%c", &c);
+            c = input[l];
+            l++;
+
             if(c == '}') // Fim do arquivo de leitura
                 break;
         }
@@ -128,14 +165,24 @@ void printMatrix(double **matrix, int lines, int columns)
     }
 }
 
-int main(int argc, char* argv[])
+int main()
 {
-    FILE *input, *output;
+    char *input;
     int lines, columns;
     double **matrix;
+    int mode;
 
-    input = fopen(argv[1], "r");
-    output = fopen(argv[2], "w");
+    printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited LP, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode > ");
+
+    scanf("%d\n", &mode);
+    printf("%d\n", mode);
+
+    fflush(stdin);
+
+    inputReader(&input);
+
+    if(mode == 2)
+        mode = detectPrimalDual(&input);
 
     dimensionCounter(input, &lines, &columns); // Function to count the input matrix dimension
 
@@ -145,9 +192,13 @@ int main(int argc, char* argv[])
 
     printMatrix(matrix, lines, columns);
 
+    /* First mode implementation */
+
+
+
+    /* Second mode implementation */
+
     matrixDisallocation(matrix, lines); // Function to free the allocated space for the matrix
-    fclose(input);
-    fclose(output);
 
     return 0;
 }
