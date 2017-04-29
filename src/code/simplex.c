@@ -149,6 +149,8 @@ double **matrixBuilder(char *input, double **matrix)
         }
     }
 
+    free(input);
+
     return matrix;
 }
 
@@ -188,6 +190,27 @@ double **buildTableau(double **matrix, int *lines, int *columns)
     }
 
     return tableau;
+}
+
+double **buildDual(double **matrix, int *lines, int *columns)
+{
+    /* Transpose JUST the A matrix and change the C^t with b, multiply all lines by -1 and build Tableau matrix */
+
+    matrix = buildTableau(matrix, lines, columns);
+
+    return matrix;
+}
+
+bool detectNeedOfAuxiliar(double **matrix, int lines, int columns)
+{
+
+
+    return 0;
+}
+
+double **buildAuxiliar(double **matrix, int lines, int columns)
+{
+    return matrix;
 }
 
 void printMatrix(double **matrix, int lines, int columns)
@@ -243,11 +266,31 @@ int main()
     if(mode == 1)
     {
         matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
+
+        /* Simplex algorithm implementation */
+    }
+
+    /* Second mode implementation */
+
+    else if(mode == 2)
+    {
+        if(primaldual == 0) // Primal solve mode
+        {
+            matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
+
+            if(detectNeedOfAuxiliar(matrix, lines, columns)) // If true, calls the function that builds the auxiliar Tableau matrix
+                buildAuxiliar(matrix, lines, columns); // Function that builds the auxiliar Tableau matrix
+        }
+
+        else if(primaldual == 1) // Dual solve mode
+        {
+            matrix = buildDual(matrix, &lines, &columns);
+
+            matrix = buildTableau(matrix, &lines, &columns);
+        }
     }
 
     printMatrix(matrix, lines, columns);
-
-    /* Second mode implementation */
 
     matrixDisallocation(matrix, lines); // Function to free the allocated space for the matrix
 
