@@ -15,6 +15,7 @@ void inputReader(char **stream)
     for(i = 0; ; i++, j++)
     {
         scanf("%c", &token);
+        printf("%c", token);
         if(token == '\n')
             break;
 
@@ -241,7 +242,7 @@ int main()
 
     if(mode == 1)
     {
-        matrix = buildTableau(matrix, &lines, &columns);
+        matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
     }
 
     printMatrix(matrix, lines, columns);
