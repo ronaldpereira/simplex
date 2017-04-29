@@ -24,14 +24,14 @@ void inputReader(char **stream)
     (*stream)[i] = '\0';
 }
 
-bool detectPrimalDual(char **input)
+bool detectPrimalDual(char *input)
 {
     bool mode; // 0 is Primal, 1 is Dual
 
-    if((*input)[0] == 'P' || (*input)[0] == 'p')
+    if(input[0] == 'P' || input[0] == 'p')
         mode = 0;
 
-    else if((*input)[0] == 'D' || (*input)[0] == 'd')
+    else if(input[0] == 'D' || input[0] == 'd')
         mode = 1;
 
     return mode;
@@ -151,6 +151,44 @@ double **matrixBuilder(char *input, double **matrix)
     return matrix;
 }
 
+double **buildTableau(double **matrix, int *lines, int *columns)
+{
+    int i, j;
+    int origcolumns = *columns;
+    double **tableau;
+
+    for(i = 0; i < *columns; i++) // Do the -C^t part
+    {
+        matrix[0][i] *= -1;
+    }
+
+    *columns += (2 * (*lines - 1)); // Adds the operations matrix, the identity matrix and b vector on the number of columns
+
+    tableau = (double**) calloc(*lines,sizeof(double*));
+    for(i = 0; i < *lines; i++)
+        tableau[i] = (double*) calloc(*columns,sizeof(double*));
+
+    for(i = 0; i < *lines; i++)
+    {
+        for(j = 0; j < *columns; j++)
+        {
+            if(j < (*lines-1) && j == (i - 1)) // We are on the operations matrix
+                tableau[i][j] = 1;
+
+            else if(j >= (*lines-1) && j <= (*columns - (*lines + 1))) // We are on the A matrix
+                tableau[i][j] = matrix[i][j-(*lines-1)];
+
+            else if(j >= ((*lines-1)+(origcolumns-1)) && j < (*columns-1) && j + 1 == i + ((*lines-1)+(origcolumns-1))) // We are on the identity matrix
+                tableau[i][j] = 1;
+
+            else if(j == (*columns-1)) // We are on the b matrix
+                tableau[i][j] = matrix[i][origcolumns-1];
+        }
+    }
+
+    return tableau;
+}
+
 void printMatrix(double **matrix, int lines, int columns)
 {
     int i, j;
@@ -172,23 +210,23 @@ int main()
     char *input;
     int lines, columns;
     double **matrix;
-    int mode;
+    int mode, primaldual;
 
     printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited LP, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode > ");
 
     scanf("%d", &mode);
     printf("%d\n", mode);
-    getc(stdin);
+    getc(stdin); // Gets the '\n' token from input
 
     inputReader(&input);
 
     if(mode == 2)
     {
-        mode = detectPrimalDual(&input);
-        if(mode == 0)
-            printf("Solving mode: Primal\n");
-        else if(mode == 1)
-            printf("Solving mode: Dual\n");
+        primaldual = detectPrimalDual(input);
+        if(primaldual == 0)
+            printf("Solving matrix mode: Primal\n");
+        else if(primaldual == 1)
+            printf("Solving matrix mode: Dual\n");
     }
 
     dimensionCounter(input, &lines, &columns); // Function to count the input matrix dimension
@@ -201,7 +239,12 @@ int main()
 
     /* First mode implementation */
 
+    if(mode == 1)
+    {
+        matrix = buildTableau(matrix, &lines, &columns);
+    }
 
+    printMatrix(matrix, lines, columns);
 
     /* Second mode implementation */
 
