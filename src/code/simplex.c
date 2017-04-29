@@ -213,7 +213,7 @@ int main()
     double **matrix;
     int mode, primaldual;
 
-    printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited LP, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode > ");
+    printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode > ");
 
     scanf("%d", &mode);
     printf("%d\n", mode);
