@@ -225,34 +225,97 @@ double **buildAuxiliar(double **matrix, int lines, int columns)
 
 void unlimitedCertificate(double **matrix, int lines, int columns, int base)
 {
-    int i;
+    int i, j;
 
-    printf("PL inviavel, aqui esta um certificado {");
-    // for(i = lines-2; i < columns-1; i++)
-    // {
-    //     if(matrix[0][i] == 0)
-    //     {
-    //
-    //     }
-    // }
+    printf("PL ilimitada, aqui esta um certificado {{");
+    for(j = lines-1; j < columns-lines; j++)
+    {
+        if(matrix[0][j] == 0)
+        {
+            for(i = 1; i < lines; i++)
+            {
+                if(matrix[i][j] == 1)
+                {
+                    if((matrix[i][base] - (int)matrix[i][base]) == 0)
+                        printf("%.0lf", -1*matrix[i][base]);
+                    else
+                        printf("%.3lf", -1*matrix[i][base]);
+                }
+            }
+        }
+
+        else if(j == base)
+        printf("1");
+
+        else if(matrix[0][j] != 0)
+            printf("0");
+
+        if(j < columns-lines-1)
+            printf(",");
+        else
+            printf("}");
+    }
     printf("}\n");
 }
 
 void viableSolution(double **matrix, int lines, int columns)
 {
-    int i;
+    int i, j;
 
-    printf("Solucao otima x = {");
-    for(i = lines-2; i < columns-1; i++)
+    printf("Solucao otima x = {{");
+    for(j = lines-1; j < columns-lines; j++)
     {
-        
+        if(matrix[0][j] != 0)
+            printf("0");
+
+        else
+        {
+            for(i = 1; i < lines; i++)
+            {
+                if(matrix[i][j] == 1)
+                {
+                    if((matrix[i][columns-1] - (int)matrix[i][columns-1]) == 0)
+                        printf("%.0lf", matrix[i][columns-1]);
+                    else
+                        printf("%.3lf", matrix[i][columns-1]);
+                }
+            }
+        }
+
+        if(j < columns-lines-1)
+            printf(",");
+        else
+            printf("}");
     }
+
+    printf("}, com valor objetivo ");
+
+    if((matrix[0][columns-1] - (int)matrix[0][columns-1]) == 0)
+        printf("%.0lf", matrix[0][columns-1]);
+    else
+        printf("%.3lf", matrix[0][columns-1]);
+
+    printf(", e solucao dual y = {{");
+
+    for(i = 0; i < lines-1; i++)
+    {
+        if((matrix[0][i] - (int)matrix[0][i]) == 0)
+            printf("%.0lf", matrix[0][i]);
+        else
+            printf("%.3lf", matrix[0][i]);
+
+        if(i < lines-2)
+            printf(",");
+        else
+            printf("}");
+    }
+    printf("}\n");
 }
 
 double **tableauSolver(double **matrix, int lines, int columns)
 {
     int i, j, base, pivot, numberofnegatives, ispositive, unviableflag;
-    double minimum = INT_MAX, aux, linedivider, multiplier;
+    double minimum, aux, linedivider, multiplier;
 
     while(1)
     {
@@ -279,7 +342,6 @@ double **tableauSolver(double **matrix, int lines, int columns)
             }
             if(numberofnegatives == lines-1) // Unlimited LP
             {
-                printf("unlim\n");
                 unlimitedCertificate(matrix, lines, columns, base);
                 return matrix;
             }
@@ -310,6 +372,7 @@ double **tableauSolver(double **matrix, int lines, int columns)
             }
         }
 
+        minimum = INT_MAX;
         for(i = 1; i < lines; i++)
         {
             if(matrix[i][base] > 0)
@@ -359,7 +422,6 @@ int main()
     printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode > ");
 
     scanf("%d", &mode);
-    printf("%d\n", mode);
     getc(stdin); // Gets the '\n' token from input
 
     inputReader(&input);

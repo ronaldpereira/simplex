@@ -7,8 +7,7 @@ Option Menu:
 	1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability
 	2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution
 
-Insert a mode > 1
-Insert the matrix input (including the primal or dual mode):
+Insert a mode > Insert the matrix input (including the primal or dual mode):
 > {{1,2,3,0},{1,1,1,2},{0,-1,3,9}}
 3 x 4
 1.00000 2.00000 3.00000 0.00000 
@@ -45,3 +44,4 @@ Insert the matrix input (including the primal or dual mode):
 3.00000 0.00000 2.00000 1.00000 0.00000 3.00000 0.00000 6.00000 
 1.00000 0.00000 1.00000 1.00000 1.00000 1.00000 0.00000 2.00000 
 -3.00000 1.00000 -3.00000 -4.00000 0.00000 -3.00000 1.00000 3.00000 
+Solucao otima x = {{0,0,2}}, com valor objetivo 6, e solucao dual y = {{3,0}}
