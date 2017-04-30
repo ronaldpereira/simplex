@@ -236,7 +236,9 @@ void unlimitedCertificate(double **matrix, int lines, int columns, int base)
             {
                 if(matrix[i][j] == 1)
                 {
-                    if((matrix[i][base] - (int)matrix[i][base]) == 0)
+                    if(matrix[i][base] == 0)
+                        printf("0");
+                    else if((matrix[i][base] - (int)matrix[i][base]) == 0)
                         printf("%.0lf", -1*matrix[i][base]);
                     else
                         printf("%.3lf", -1*matrix[i][base]);
@@ -312,7 +314,7 @@ void viableSolution(double **matrix, int lines, int columns)
     printf("}\n");
 }
 
-double **tableauSolver(double **matrix, int lines, int columns)
+double **primalTableauSolver(double **matrix, int lines, int columns)
 {
     int i, j, base, pivot, numberofnegatives, ispositive, unviableflag;
     double minimum, aux, linedivider, multiplier;
@@ -451,7 +453,7 @@ int main()
 
         printMatrix(matrix, lines, columns);
 
-        matrix = tableauSolver(matrix, lines, columns); // Tableau Simplex algorithm solver
+        matrix = primalTableauSolver(matrix, lines, columns); // Tableau Simplex algorithm solver
     }
 
     /* Second mode implementation */
