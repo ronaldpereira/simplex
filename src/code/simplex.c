@@ -2,6 +2,23 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <limits.h>
+
+void printMatrix(double **matrix, int lines, int columns)
+{
+    int i, j;
+
+    printf("%d x %d\n", lines, columns);
+
+    for(i = 0; i < lines; i++)
+    {
+        for(j = 0; j < columns; j++)
+        {
+            printf("%.5lf ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
 
 void inputReader(char **stream)
 {
@@ -192,15 +209,6 @@ double **buildTableau(double **matrix, int *lines, int *columns)
     return tableau;
 }
 
-double **buildDual(double **matrix, int *lines, int *columns)
-{
-    /* Transpose JUST the A matrix and change the C^t with b, multiply all lines by -1 and build Tableau matrix */
-
-    matrix = buildTableau(matrix, lines, columns);
-
-    return matrix;
-}
-
 bool detectNeedOfAuxiliar(double **matrix, int lines, int columns)
 {
 
@@ -210,23 +218,135 @@ bool detectNeedOfAuxiliar(double **matrix, int lines, int columns)
 
 double **buildAuxiliar(double **matrix, int lines, int columns)
 {
+
+
     return matrix;
 }
 
-void printMatrix(double **matrix, int lines, int columns)
+void unlimitedCertificate(double **matrix, int lines, int columns, int base)
 {
-    int i, j;
+    int i;
 
-    printf("%d x %d\n", lines, columns);
+    printf("PL inviavel, aqui esta um certificado {");
+    // for(i = lines-2; i < columns-1; i++)
+    // {
+    //     if(matrix[0][i] == 0)
+    //     {
+    //
+    //     }
+    // }
+    printf("}\n");
+}
 
-    for(i = 0; i < lines; i++)
+void viableSolution(double **matrix, int lines, int columns)
+{
+    int i;
+
+    printf("Solucao otima x = {");
+    for(i = lines-2; i < columns-1; i++)
     {
-        for(j = 0; j < columns; j++)
-        {
-            printf("%.5lf ", matrix[i][j]);
-        }
-        printf("\n");
+        
     }
+}
+
+double **tableauSolver(double **matrix, int lines, int columns)
+{
+    int i, j, base, pivot, numberofnegatives, ispositive, unviableflag;
+    double minimum = INT_MAX, aux, linedivider, multiplier;
+
+    while(1)
+    {
+        base = 0;
+        for(i = lines-1; i < columns; i++)
+        {
+            if(matrix[0][i] < 0)
+            {
+                base = i;
+                break;
+            }
+        }
+
+        if(base == 0) // C^t >= 0
+            break;
+
+        else if(base != 0) // Unlimited and Unviable LP test
+        {
+            numberofnegatives = 0; // Unlimited test
+            for(i = 1; i < lines; i++)
+            {
+                if(matrix[i][base] <= 0)
+                    numberofnegatives++;
+            }
+            if(numberofnegatives == lines-1) // Unlimited LP
+            {
+                printf("unlim\n");
+                unlimitedCertificate(matrix, lines, columns, base);
+                return matrix;
+            }
+
+            unviableflag = 0;
+            for(i = 1; i < lines; i++) // Unviable test
+            {
+                if(matrix[i][columns-1] < 0) // b is negative
+                {
+                    ispositive = 0;
+                    for(j = lines-1; j < columns-1; j++)
+                    {
+                        if(matrix[i][j] >= 0)
+                            ispositive++;
+                    }
+                    if(ispositive == (columns-lines))
+                    {
+                        unviableflag = 1;
+                        break;
+                    }
+                }
+            }
+            if(unviableflag)
+            {
+                printf("unvia\n");
+                // unviableCertificate(matrix, lines, columns, base);
+                return matrix;
+            }
+        }
+
+        for(i = 1; i < lines; i++)
+        {
+            if(matrix[i][base] > 0)
+            {
+                aux = (matrix[i][columns-1]/matrix[i][base]);
+                if(aux < minimum)
+                {
+                    minimum = aux;
+                    pivot = i;
+                }
+            }
+        }
+        printf("[%d] [%d] = %.4lf\n", pivot, base, matrix[pivot][base]);
+
+        linedivider = matrix[pivot][base];
+
+        for(i = 0; i < columns; i++)
+            matrix[pivot][i] /= linedivider;
+
+        printMatrix(matrix, lines, columns);
+
+        for(i = 0; i < lines; i++)
+        {
+            if(matrix[i][base] != 0 && i != pivot)
+            {
+                multiplier = -1*(matrix[i][base]/matrix[pivot][base]);
+
+                for(j = 0; j < columns; j++)
+                    matrix[i][j] += multiplier * matrix[pivot][j];
+            }
+        }
+        printMatrix(matrix, lines, columns);
+    }
+
+    viableSolution(matrix, lines, columns);
+
+    return matrix;
 }
 
 int main()
@@ -267,7 +387,9 @@ int main()
     {
         matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-        /* Simplex algorithm implementation */
+        printMatrix(matrix, lines, columns);
+
+        matrix = tableauSolver(matrix, lines, columns); // Tableau Simplex algorithm solver
     }
 
     /* Second mode implementation */
@@ -279,18 +401,15 @@ int main()
             matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
             if(detectNeedOfAuxiliar(matrix, lines, columns)) // If true, calls the function that builds the auxiliar Tableau matrix
-                buildAuxiliar(matrix, lines, columns); // Function that builds the auxiliar Tableau matrix
+                matrix = buildAuxiliar(matrix, lines, columns); // Function that builds the auxiliar Tableau matrix
         }
 
         else if(primaldual == 1) // Dual solve mode
         {
-            matrix = buildDual(matrix, &lines, &columns);
-
             matrix = buildTableau(matrix, &lines, &columns);
+            /*  Dual Simplex Algorithm */
         }
     }
-
-    printMatrix(matrix, lines, columns);
 
     matrixDisallocation(matrix, lines); // Function to free the allocated space for the matrix
 

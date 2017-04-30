@@ -10,5 +10,8 @@ clean:
 test:
 	make all && make run && make clean
 
+test2:
+	make all && ./simplex.exe < ../test/input.txt && make clean
+
 # gdb:
 #	start < ../test/input.txt > ../test/output.txt
