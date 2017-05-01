@@ -8,8 +8,6 @@ void printMatrix(double **matrix, int lines, int columns)
 {
     int i, j;
 
-    printf("%d x %d\n", lines, columns);
-
     for(i = 0; i < lines; i++)
     {
         for(j = 0; j < columns; j++)
@@ -18,6 +16,38 @@ void printMatrix(double **matrix, int lines, int columns)
         }
         printf("\n");
     }
+    printf("\n");
+}
+
+void printLineMatrix(double **matrix, int lines, int columns)
+{
+    int i, j;
+
+    printf("{");
+    for(i = 0; i < lines; i++)
+    {
+        for(j = 0; j < columns; j++)
+        {
+            if(j == 0)
+                printf("{");
+
+            if(matrix[i][j] == 0)
+                printf("0");
+            else if((matrix[i][j] - (int)matrix[i][j]) == 0)
+                printf("%.0lf", matrix[i][j]);
+            else
+                printf("%.3lf", matrix[i][j]);
+
+
+            if(j < columns-1)
+                printf(",");
+            else
+                printf("}");
+        }
+        if(i < lines-1)
+            printf(",");
+    }
+    printf("}\n");
 }
 
 void inputReader(char **stream)
@@ -314,13 +344,16 @@ void viableSolution(double **matrix, int lines, int columns)
     printf("}\n");
 }
 
-double **primalTableauSolver(double **matrix, int lines, int columns)
+double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
 {
     int i, j, base, pivot, numberofnegatives, ispositive, unviableflag;
     double minimum, aux, linedivider, multiplier;
 
     while(1)
     {
+        if(mode == 2)
+            printLineMatrix(matrix, lines, columns);
+
         base = 0;
         for(i = lines-1; i < columns; i++)
         {
@@ -342,7 +375,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns)
                 if(matrix[i][base] <= 0)
                     numberofnegatives++;
             }
-            if(numberofnegatives == lines-1) // Unlimited LP
+            if(numberofnegatives == lines-1 && mode == 1) // Unlimited LP
             {
                 unlimitedCertificate(matrix, lines, columns, base);
                 return matrix;
@@ -366,7 +399,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns)
                     }
                 }
             }
-            if(unviableflag)
+            if(unviableflag && mode == 1)
             {
                 printf("unvia\n");
                 // unviableCertificate(matrix, lines, columns, base);
@@ -387,14 +420,16 @@ double **primalTableauSolver(double **matrix, int lines, int columns)
                 }
             }
         }
-        printf("[%d] [%d] = %.4lf\n", pivot, base, matrix[pivot][base]);
+        if(mode == 1)
+            printf("[%d] [%d] = %.4lf\n", pivot, base, matrix[pivot][base]);
 
         linedivider = matrix[pivot][base];
 
         for(i = 0; i < columns; i++)
             matrix[pivot][i] /= linedivider;
 
-        printMatrix(matrix, lines, columns);
+        if(mode == 1)
+            printMatrix(matrix, lines, columns);
 
         for(i = 0; i < lines; i++)
         {
@@ -406,14 +441,22 @@ double **primalTableauSolver(double **matrix, int lines, int columns)
                     matrix[i][j] += multiplier * matrix[pivot][j];
             }
         }
-        printMatrix(matrix, lines, columns);
+        if(mode == 1)
+            printMatrix(matrix, lines, columns);
     }
 
-    viableSolution(matrix, lines, columns);
+    if(mode == 1)
+        viableSolution(matrix, lines, columns);
 
     return matrix;
 }
 
+double **dualTableauSolver(double **matrix, int lines, int columns)
+{
+
+
+    return matrix;
+}
 int main()
 {
     char *input;
@@ -453,7 +496,7 @@ int main()
 
         printMatrix(matrix, lines, columns);
 
-        matrix = primalTableauSolver(matrix, lines, columns); // Tableau Simplex algorithm solver
+        matrix = primalTableauSolver(matrix, lines, columns, mode); // Tableau Simplex algorithm solver
     }
 
     /* Second mode implementation */
@@ -464,13 +507,24 @@ int main()
         {
             matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-            if(detectNeedOfAuxiliar(matrix, lines, columns)) // If true, calls the function that builds the auxiliar Tableau matrix
+            printMatrix(matrix, lines, columns);
+
+            /* Probably this function should be inside the primalTableauSolver() if detects a unviable LP
+            if(detectNeedOfAuxiliar(matrix, lines, columns))
+            { // If true, calls the function that builds the auxiliar Tableau matrix
                 matrix = buildAuxiliar(matrix, lines, columns); // Function that builds the auxiliar Tableau matrix
+                // Function that converts a auxiliar LP into a Tableau matrix
+            }*/
+
+            matrix = primalTableauSolver(matrix, lines, columns, mode);
         }
 
         else if(primaldual == 1) // Dual solve mode
         {
             matrix = buildTableau(matrix, &lines, &columns);
+
+            printMatrix(matrix, lines, columns);
+
             /*  Dual Simplex Algorithm */
         }
     }
