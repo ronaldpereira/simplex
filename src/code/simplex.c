@@ -239,13 +239,6 @@ double **buildTableau(double **matrix, int *lines, int *columns)
     return tableau;
 }
 
-bool detectNeedOfAuxiliar(double **matrix, int lines, int columns)
-{
-
-
-    return 0;
-}
-
 double **buildAuxiliar(double **matrix, int lines, int columns)
 {
 
@@ -412,7 +405,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
         {
             if(matrix[i][base] > 0)
             {
-                aux = (matrix[i][columns-1]/matrix[i][base]);
+                aux = (matrix[i][columns-1] / matrix[i][base]);
                 if(aux < minimum)
                 {
                     minimum = aux;
@@ -435,13 +428,13 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
         {
             if(matrix[i][base] != 0 && i != pivot)
             {
-                multiplier = -1*(matrix[i][base]/matrix[pivot][base]);
+                multiplier = -1*(matrix[i][base] / matrix[pivot][base]);
 
                 for(j = 0; j < columns; j++)
                     matrix[i][j] += multiplier * matrix[pivot][j];
             }
         }
-        if(mode == 1)
+        // if(mode == 1)
             printMatrix(matrix, lines, columns);
     }
 
@@ -453,7 +446,58 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
 
 double **dualTableauSolver(double **matrix, int lines, int columns)
 {
+    int i, j, base, pivot;
+    double minimum, aux, linedivider, multiplier;
 
+    while(1)
+    {
+        printLineMatrix(matrix, lines, columns);
+        
+        base = 0;
+        for(i = 1; i < lines; i++)
+        {
+            if(matrix[i][columns-1] < 0)
+            {
+                base = i;
+                break;
+            }
+        }
+
+        if(base == 0)
+            break;
+
+        minimum = INT_MAX;
+        for(j = lines-1; j < columns-1; j++)
+        {
+            if(matrix[base][j] < 0)
+            {
+                aux = (matrix[0][j] / abs(matrix[base][j]));
+
+                if(aux < minimum)
+                {
+                    minimum = aux;
+                    pivot = j;
+                }
+            }
+        }
+
+        linedivider = matrix[base][pivot];
+
+        for(i = 0; i < columns; i++)
+            matrix[base][i] /= linedivider;
+
+        for(i = 0; i < lines; i++)
+        {
+            if(matrix[i][pivot] != 0 && i != base)
+            {
+                multiplier = -1*(matrix[i][pivot] / matrix[base][pivot]);
+
+                for(j = 0; j < columns; j++)
+                    matrix[i][j] += multiplier * matrix[base][j];
+            }
+        }
+    }
+    printLineMatrix(matrix, lines, columns);
 
     return matrix;
 }
@@ -525,7 +569,7 @@ int main()
 
             printMatrix(matrix, lines, columns);
 
-            /*  Dual Simplex Algorithm */
+            matrix = dualTableauSolver(matrix, lines, columns);
         }
     }
 
