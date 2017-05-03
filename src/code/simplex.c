@@ -191,7 +191,7 @@ double **matrixBuilder(char *input, double **matrix)
             c = input[l];
             l++;
 
-            if(c == '}') // Fim do arquivo de leitura
+            if(c == '}') // End of input file
                 break;
         }
     }
@@ -239,12 +239,7 @@ double **buildTableau(double **matrix, int *lines, int *columns)
     return tableau;
 }
 
-double **buildAuxiliar(double **matrix, int lines, int columns)
-{
-
-
-    return matrix;
-}
+// void unviableCertificate()
 
 void unlimitedCertificate(double **matrix, int lines, int columns, int base)
 {
@@ -394,7 +389,8 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
             }
             if(unviableflag && mode == 1)
             {
-                printf("unvia\n");
+                printf("unviable\n");
+                // matrix = buildAuxiliarToTableau(matrix, lines, columns);
                 // unviableCertificate(matrix, lines, columns, base);
                 return matrix;
             }
@@ -501,6 +497,44 @@ double **dualTableauSolver(double **matrix, int lines, int columns)
 
     return matrix;
 }
+
+double **buildAuxiliarToTableau(double **matrix, int lines, int columns)
+{
+    int i, j;
+    double **auxiliar;
+
+    columns += lines;
+
+    auxiliar = (double**) calloc(lines,sizeof(double*));
+    for (i = 0; i < lines; i++)
+        auxiliar[i] = (double*) calloc(columns,sizeof(double*));
+
+    for(j = 0; j < columns; j++)
+    {
+        for(i = 0; i < lines; i++)
+        {
+            if(j < columns-lines-1)
+                auxiliar[i][j] = matrix[i][j];
+
+            else if(j == columns-1)
+                auxiliar[i][j] = matrix[i-lines][j-lines];
+
+            //else
+                // TODO Construir identidade com 1 e 0 direto no C^t
+        }
+    }
+
+    for(i = 1; i < lines; i++)
+    {
+        for(j = 0; j < lines; j++)
+            auxiliar[0][j] -= auxiliar[i][j];
+    }
+
+    auxiliar = primalTableauSolver(auxiliar, lines, columns, 1);
+
+    return auxiliar;
+}
+
 int main()
 {
     char *input;
@@ -552,13 +586,6 @@ int main()
             matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
             printMatrix(matrix, lines, columns);
-
-            /* Probably this function should be inside the primalTableauSolver() if detects a unviable LP
-            if(detectNeedOfAuxiliar(matrix, lines, columns))
-            { // If true, calls the function that builds the auxiliar Tableau matrix
-                matrix = buildAuxiliar(matrix, lines, columns); // Function that builds the auxiliar Tableau matrix
-                // Function that converts a auxiliar LP into a Tableau matrix
-            }*/
 
             matrix = primalTableauSolver(matrix, lines, columns, mode);
         }
