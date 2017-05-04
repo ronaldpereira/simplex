@@ -50,30 +50,6 @@ void printLineMatrix(double **matrix, int lines, int columns)
     printf("}\n");
 }
 
-char *inputReader()
-{
-    char token, *stream;
-    int i, j = 1;
-
-    stream = (char*) malloc(sizeof(char));
-
-    printf("Insert the matrix input (including the primal or dual mode):\n> ");
-
-    for(i = 0; ; i++, j++)
-    {
-        scanf("%c", &token);
-        printf("%c", token);
-        if(token == '\n')
-            break;
-
-        stream[i] = token;
-        stream = (char*) realloc(stream, (j+1)*sizeof(char));
-    }
-    stream[i] = '\0';
-
-    return stream;
-}
-
 bool detectPrimalDual(char input)
 {
     bool mode; // 0 is Primal, 1 is Dual
@@ -162,8 +138,6 @@ double **matrixBuilder(char *input, double **matrix)
                 break;
         }
     }
-
-    free(input);
 
     return matrix;
 }
@@ -518,16 +492,16 @@ int main()
 
     if(mode == 2)
     {
-        printf("Insert the mode (P for primal / D for dual): > ");
+        printf("Insert the mode (P for primal / D for dual):\n> ");
         scanf("%c", &option);
         getc(stdin); // Gets the '\n' token from input
         primaldual = detectPrimalDual(option);
     }
 
-    printf("Number of lines: > ");
+    printf("Number of lines:\n> ");
     scanf("%d", &lines);
     getc(stdin); // Gets the '\n' token from input
-    printf("Number of columns: > ");
+    printf("Number of columns:\n> ");
     scanf("%d", &columns);
     getc(stdin); // Gets the '\n' token from input
     lines++;
@@ -535,7 +509,8 @@ int main()
 
     matrix = matrixAllocation(lines, columns); // Function to allocate the matrix
 
-    input = inputReader();
+    printf("Insert the matrix input:\n> ");
+    scanf("%s", input);
 
     matrixBuilder(input, matrix); // Function to build the matrix from the input file
 
