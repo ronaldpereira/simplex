@@ -12,7 +12,7 @@ void printMatrix(double **matrix, int lines, int columns)
     {
         for(j = 0; j < columns; j++)
         {
-            printf("%.5lf ", matrix[i][j]);
+            printf("%.3lf ", matrix[i][j]);
         }
         printf("\n");
     }
