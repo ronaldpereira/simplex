@@ -121,7 +121,7 @@ double **matrixBuilder(char *input, double **matrix)
         c = input[l];
         l++;
 
-        if(((int)c >= 48 && (int) c <= 57) || c == '.') // C is a number  or a dot
+        if(((int)c >= 48 && (int) c <= 57) || c == '.') // C is a number or a dot
         {
             num[k] = c;
             k++;
