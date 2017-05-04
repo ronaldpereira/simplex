@@ -50,12 +50,12 @@ void printLineMatrix(double **matrix, int lines, int columns)
     printf("}\n");
 }
 
-void inputReader(char **stream)
+char *inputReader()
 {
-    char token;
+    char token, *stream;
     int i, j = 1;
 
-    *stream = (char*) malloc(sizeof(char));
+    stream = (char*) malloc(sizeof(char));
 
     printf("Insert the matrix input (including the primal or dual mode):\n> ");
 
@@ -66,58 +66,25 @@ void inputReader(char **stream)
         if(token == '\n')
             break;
 
-        (*stream)[i] = token;
-        *stream = (char*) realloc(*stream, (j+1)*sizeof(char));
+        stream[i] = token;
+        stream = (char*) realloc(stream, (j+1)*sizeof(char));
     }
-    (*stream)[i] = '\0';
+    stream[i] = '\0';
+
+    return stream;
 }
 
-bool detectPrimalDual(char *input)
+bool detectPrimalDual(char input)
 {
     bool mode; // 0 is Primal, 1 is Dual
 
-    if(input[0] == 'P' || input[0] == 'p')
+    if(input == 'P')
         mode = 0;
 
-    else if(input[0] == 'D' || input[0] == 'd')
+    else if(input == 'D')
         mode = 1;
 
     return mode;
-}
-
-void dimensionCounter(char *input, int *lines, int *columns)
-{
-    char c;
-    int flag = 0, i = 0;
-    *lines = -1;
-    *columns = 1;
-
-    while(input[i] != '\0')
-    {
-        c = input[i];
-        i++;
-
-        if(c == '{')
-            (*lines)++;
-
-        if(*lines == 1 && flag == 0)
-        {
-            while(1)
-            {
-                c = input[i];
-                i++;
-
-                if(c == '}')
-                {
-                    flag = 1;
-                    break;
-                }
-
-                if(c == ',')
-                    (*columns)++;
-            }
-        }
-    }
 }
 
 double **matrixAllocation(int lines, int columns)
@@ -448,7 +415,7 @@ double **dualTableauSolver(double **matrix, int lines, int columns)
     while(1)
     {
         printLineMatrix(matrix, lines, columns);
-        
+
         base = 0;
         for(i = 1; i < lines; i++)
         {
@@ -541,26 +508,34 @@ int main()
     int lines, columns;
     double **matrix;
     int mode, primaldual;
+    char option;
 
     printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode > ");
 
-    scanf("%d", &mode);
+    scanf("modo %d", &mode);
     getc(stdin); // Gets the '\n' token from input
 
-    inputReader(&input);
 
     if(mode == 2)
     {
-        primaldual = detectPrimalDual(input);
-        if(primaldual == 0)
-            printf("Solving matrix mode: Primal\n");
-        else if(primaldual == 1)
-            printf("Solving matrix mode: Dual\n");
+        printf("Insert the mode (P for primal / D for dual): > ");
+        scanf("%c", &option);
+        getc(stdin); // Gets the '\n' token from input
+        primaldual = detectPrimalDual(option);
     }
 
-    dimensionCounter(input, &lines, &columns); // Function to count the input matrix dimension
+    printf("Number of lines: > ");
+    scanf("%d", &lines);
+    getc(stdin); // Gets the '\n' token from input
+    printf("Number of columns: > ");
+    scanf("%d", &columns);
+    getc(stdin); // Gets the '\n' token from input
+    lines++;
+    columns++;
 
     matrix = matrixAllocation(lines, columns); // Function to allocate the matrix
+
+    input = inputReader();
 
     matrixBuilder(input, matrix); // Function to build the matrix from the input file
 
