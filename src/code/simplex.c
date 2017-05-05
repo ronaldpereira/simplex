@@ -175,6 +175,8 @@ double **buildTableau(double **matrix, int *lines, int *columns) // Function tha
         }
     }
 
+    matrixDisallocation(matrix, *lines);
+
     return tableau;
 }
 
@@ -185,9 +187,7 @@ double **buildAuxiliarToTableau(double **matrix, int *lines, int *columns) // Fu
 
     *columns += (*lines)-1;
 
-    auxiliar = (double**) calloc(*lines,sizeof(double*));
-    for (i = 0; i < *lines; i++)
-        auxiliar[i] = (double*) calloc(*columns,sizeof(double*));
+    auxiliar = matrixAllocation(*lines, *columns);
 
     for(j = 0; j < *columns; j++)
     {
@@ -213,6 +213,8 @@ double **buildAuxiliarToTableau(double **matrix, int *lines, int *columns) // Fu
             auxiliar[0][j] -= auxiliar[i][j];
     }
     printMatrix(auxiliar,(*lines),(*columns)); // TODO Retirar funcao teste
+
+    matrixDisallocation(matrix, *lines);
 
     return auxiliar;
 }
@@ -509,11 +511,10 @@ int main()
     int mode, primaldual;
     char option;
 
-    printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode:\n> ");
-
+    printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\n");
+    printf("Insert a mode:\n> ");
     scanf("modo %d", &mode);
     getc(stdin); // Gets the '\n' token from input
-
 
     if(mode == 2)
     {
