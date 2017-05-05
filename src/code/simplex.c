@@ -189,35 +189,39 @@ double **buildAuxiliarToTableau(double **matrix, int lines, int columns)
     int i, j;
     double **auxiliar;
 
-    printf("oi\n");
-    columns += lines;
+    columns += lines-1;
 
     auxiliar = (double**) calloc(lines,sizeof(double*));
     for (i = 0; i < lines; i++)
         auxiliar[i] = (double*) calloc(columns,sizeof(double*));
 
+    // TODO Detectar qual linha esta negativa, multiplicar por -1 e aplicar a matrix auxiliar (vou perder a identidade, mas acrescentarei outra no final da FPI)
+
     for(j = 0; j < columns; j++)
     {
         for(i = 0; i < lines; i++)
         {
-            if(j < columns-lines-1)
+            printf("%d %d\n", i, j);
+            if(j < columns-lines && i != 0)
                 auxiliar[i][j] = matrix[i][j];
 
             else if(j == columns-1)
-                auxiliar[i][j] = matrix[i-lines][j-lines];
+                auxiliar[i][j] = matrix[i][j-lines+1];
 
-            //else
+            // else
                 // TODO Construir identidade com 1 e 0 direto no C^t
+            printMatrix(auxiliar,lines,columns);
         }
     }
 
     for(i = 1; i < lines; i++)
     {
-        for(j = 0; j < lines; j++)
+        for(j = 0; j < columns; j++)
             auxiliar[0][j] -= auxiliar[i][j];
     }
+    printMatrix(auxiliar,lines,columns);
 
-    auxiliar = primalTableauSolver(auxiliar, lines, columns, 1);
+    // auxiliar = primalTableauSolver(auxiliar, lines, columns, 1);
 
     return auxiliar;
 }
@@ -376,6 +380,8 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
                     if(ispositive == (columns-lines))
                     {
                         unviableflag = 1;
+                        for(j = lines-1; j < columns; j++)
+                            matrix[i][j] *= -1;
                         break;
                     }
                 }
@@ -501,7 +507,7 @@ int main()
     int mode, primaldual;
     char option;
 
-    printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode > ");
+    printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\nInsert a mode:\n> ");
 
     scanf("modo %d", &mode);
     getc(stdin); // Gets the '\n' token from input
