@@ -4,7 +4,7 @@
 #include <string.h>
 #include <limits.h>
 
-void printMatrix(double **matrix, int lines, int columns)
+void printMatrix(double **matrix, int lines, int columns) // TODO Retirar funcao teste
 {
     int i, j;
 
@@ -19,7 +19,7 @@ void printMatrix(double **matrix, int lines, int columns)
     printf("\n");
 }
 
-void printLineMatrix(double **matrix, int lines, int columns)
+void printLineMatrix(double **matrix, int lines, int columns) // Function to print the matrix in one line
 {
     int i, j;
 
@@ -33,7 +33,7 @@ void printLineMatrix(double **matrix, int lines, int columns)
 
             if(matrix[i][j] == 0)
                 printf("0");
-            else if((matrix[i][j] - (int)matrix[i][j]) == 0)
+            else if((matrix[i][j] - (int)matrix[i][j]) == 0) // If the cell is a integer number, do not print it with .3lf
                 printf("%.0lf", matrix[i][j]);
             else
                 printf("%.3lf", matrix[i][j]);
@@ -50,7 +50,7 @@ void printLineMatrix(double **matrix, int lines, int columns)
     printf("}\n");
 }
 
-bool detectPrimalDual(char input)
+bool detectPrimalDual(char input) // Function to detect if, in mode 2, is primal or dual solving mode
 {
     bool mode; // 0 is Primal, 1 is Dual
 
@@ -63,7 +63,7 @@ bool detectPrimalDual(char input)
     return mode;
 }
 
-double **matrixAllocation(int lines, int columns)
+double **matrixAllocation(int lines, int columns) // Function to allocate the matrix
 {
     int i;
     double **matrix;
@@ -75,7 +75,7 @@ double **matrixAllocation(int lines, int columns)
     return matrix;
 }
 
-double **matrixDisallocation(double **matrix, int lines)
+double **matrixDisallocation(double **matrix, int lines) // Function to disallocate the matrix
 {
     int i;
 
@@ -86,7 +86,7 @@ double **matrixDisallocation(double **matrix, int lines)
     return NULL;
 }
 
-double **matrixBuilder(char *input, double **matrix)
+double **matrixBuilder(char *input, double **matrix) // Function that converts the input line matrix to a two-dimension matrix
 {
     int i = 0, j = 0, k = 0, l = 0;
     bool neg = 0;
@@ -142,7 +142,7 @@ double **matrixBuilder(char *input, double **matrix)
     return matrix;
 }
 
-double **buildTableau(double **matrix, int *lines, int *columns)
+double **buildTableau(double **matrix, int *lines, int *columns) // Function that builds the Tableau matrix
 {
     int i, j;
     int origcolumns = *columns;
@@ -155,9 +155,7 @@ double **buildTableau(double **matrix, int *lines, int *columns)
 
     *columns += (2 * (*lines - 1)); // Adds the operations matrix, the identity matrix and b vector on the number of columns
 
-    tableau = (double**) calloc(*lines,sizeof(double*));
-    for(i = 0; i < *lines; i++)
-        tableau[i] = (double*) calloc(*columns,sizeof(double*));
+    tableau = matrixAllocation(*lines, *columns);
 
     for(i = 0; i < *lines; i++)
     {
@@ -180,53 +178,67 @@ double **buildTableau(double **matrix, int *lines, int *columns)
     return tableau;
 }
 
-// void unviableCertificate()
-
-double **primalTableauSolver(double **matrix, int lines, int columns, int mode);
-
-double **buildAuxiliarToTableau(double **matrix, int lines, int columns)
+double **buildAuxiliarToTableau(double **matrix, int *lines, int *columns) // Function that builds the auxiliar matrix in Tableau
 {
     int i, j;
     double **auxiliar;
 
-    columns += lines-1;
+    *columns += (*lines)-1;
 
-    auxiliar = (double**) calloc(lines,sizeof(double*));
-    for (i = 0; i < lines; i++)
-        auxiliar[i] = (double*) calloc(columns,sizeof(double*));
+    auxiliar = (double**) calloc(*lines,sizeof(double*));
+    for (i = 0; i < *lines; i++)
+        auxiliar[i] = (double*) calloc(*columns,sizeof(double*));
 
-    // TODO Detectar qual linha esta negativa, multiplicar por -1 e aplicar a matrix auxiliar (vou perder a identidade, mas acrescentarei outra no final da FPI)
-
-    for(j = 0; j < columns; j++)
+    for(j = 0; j < *columns; j++)
     {
-        for(i = 0; i < lines; i++)
+        for(i = 0; i < *lines; i++)
         {
-            printf("%d %d\n", i, j);
-            if(j < columns-lines && i != 0)
+            if(j < (*columns)-(*lines) && i != 0)
                 auxiliar[i][j] = matrix[i][j];
 
-            else if(j == columns-1)
-                auxiliar[i][j] = matrix[i][j-lines+1];
-
-            // else
-                // TODO Construir identidade com 1 e 0 direto no C^t
-            printMatrix(auxiliar,lines,columns);
+            else if(j == (*columns)-1)
+                auxiliar[i][j] = matrix[i][j-(*lines)+1];
         }
     }
 
-    for(i = 1; i < lines; i++)
+    for(i = (*lines)-1, j = (*columns)-2; i > 0; i--, j--)
     {
-        for(j = 0; j < columns; j++)
+        auxiliar[i][j] = 1;
+        auxiliar[0][j] = 1;
+    }
+
+    for(i = 1; i < (*lines); i++)
+    {
+        for(j = 0; j < (*columns); j++)
             auxiliar[0][j] -= auxiliar[i][j];
     }
-    printMatrix(auxiliar,lines,columns);
-
-    // auxiliar = primalTableauSolver(auxiliar, lines, columns, 1);
+    printMatrix(auxiliar,(*lines),(*columns)); // TODO Retirar funcao teste
 
     return auxiliar;
 }
 
-void unlimitedCertificate(double **matrix, int lines, int columns, int base, int *bases)
+void unviableCertificate(double **matrix, int lines) // Function that outputs the unviable certificate
+{
+    int i;
+
+    printf("PL inviavel, aqui esta um certificado {{");
+    for(i = 0; i < lines-1; i++)
+    {
+        if(matrix[0][i] == 0)
+            printf("0");
+        else if((matrix[0][i] - (int)matrix[0][i]) == 0)
+            printf("%.0lf", -1*matrix[0][i]);
+        else
+            printf("%.3lf", -1*matrix[0][i]);
+
+        if(i < lines-2)
+            printf(",");
+    }
+
+    printf("}}\n");
+}
+
+void unlimitedCertificate(double **matrix, int lines, int columns, int base, int *bases) // Function that outputs the unlimited certificate
 {
     int i, j, k;
 
@@ -261,13 +273,11 @@ void unlimitedCertificate(double **matrix, int lines, int columns, int base, int
 
         if(j < columns-lines-1)
             printf(",");
-        else
-            printf("}");
     }
-    printf("}\n");
+    printf("}}\n");
 }
 
-void viableSolution(double **matrix, int lines, int columns, int *bases)
+void viableSolution(double **matrix, int lines, int columns, int *bases) // Function that outputs the optimum viable solution, the objective value and the dual solution
 {
     int i, j, k;
 
@@ -324,7 +334,7 @@ void viableSolution(double **matrix, int lines, int columns, int *bases)
     printf("}\n");
 }
 
-double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
+double **primalTableauSolver(double **matrix, int lines, int columns, int mode) // Function that solves the given LP in the primal Tableau algorithm, using Bland's Law
 {
     int i, j, base, bases[lines-1], pivot, numberofnegatives, ispositive, unviableflag;
     double minimum, aux, linedivider, multiplier;
@@ -340,7 +350,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
             printLineMatrix(matrix, lines, columns);
 
         base = 0;
-        for(i = lines-1; i < columns; i++)
+        for(i = lines-1; i < columns-1; i++)
         {
             if(matrix[0][i] < 0)
             {
@@ -380,17 +390,16 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
                     if(ispositive == (columns-lines))
                     {
                         unviableflag = 1;
-                        for(j = lines-1; j < columns; j++)
+                        for(j = 0; j < columns; j++)
                             matrix[i][j] *= -1;
-                        break;
                     }
                 }
             }
             if(unviableflag && mode == 1)
             {
-                printf("unviable\n");
-                matrix = buildAuxiliarToTableau(matrix, lines, columns);
-                // unviableCertificate(matrix, lines, columns, base);
+                matrix = buildAuxiliarToTableau(matrix, &lines, &columns);
+                matrix = primalTableauSolver(matrix, lines, columns, 3);
+                unviableCertificate(matrix, lines);
                 return matrix;
             }
         }
@@ -408,8 +417,6 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
                 }
             }
         }
-        if(mode == 1)
-            printf("[%d] [%d] = %.4lf\n", pivot, base, matrix[pivot][base]);
 
         bases[pivot-1] = base;
 
@@ -417,9 +424,6 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
 
         for(i = 0; i < columns; i++)
             matrix[pivot][i] /= linedivider;
-
-        if(mode == 1)
-            printMatrix(matrix, lines, columns);
 
         for(i = 0; i < lines; i++)
         {
@@ -431,8 +435,6 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
                     matrix[i][j] += multiplier * matrix[pivot][j];
             }
         }
-        // if(mode == 1)
-            printMatrix(matrix, lines, columns);
     }
 
     if(mode == 1)
@@ -441,7 +443,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
     return matrix;
 }
 
-double **dualTableauSolver(double **matrix, int lines, int columns)
+double **dualTableauSolver(double **matrix, int lines, int columns) // Function that solves the given LP in the dual Tableau algorithm, using Bland's Law
 {
     int i, j, base, pivot;
     double minimum, aux, linedivider, multiplier;
@@ -537,7 +539,7 @@ int main()
 
     matrixBuilder(input, matrix); // Function to build the matrix from the input file
 
-    printMatrix(matrix, lines, columns);
+    printMatrix(matrix, lines, columns); // TODO Retirar funcao teste
 
     /* First mode implementation */
 
@@ -545,9 +547,9 @@ int main()
     {
         matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-        printMatrix(matrix, lines, columns);
+        printMatrix(matrix, lines, columns); // TODO Retirar funcao teste
 
-        matrix = primalTableauSolver(matrix, lines, columns, mode); // Tableau Simplex algorithm solver
+        matrix = primalTableauSolver(matrix, lines, columns, mode); // Primal Tableau Simplex algorithm solver
     }
 
     /* Second mode implementation */
@@ -558,18 +560,18 @@ int main()
         {
             matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-            printMatrix(matrix, lines, columns);
+            printMatrix(matrix, lines, columns); // TODO Retirar funcao teste
 
-            matrix = primalTableauSolver(matrix, lines, columns, mode);
+            matrix = primalTableauSolver(matrix, lines, columns, mode); // Primal Tableau Simplex algorithm solver
         }
 
         else if(primaldual == 1) // Dual solve mode
         {
-            matrix = buildTableau(matrix, &lines, &columns);
+            matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-            printMatrix(matrix, lines, columns);
+            printMatrix(matrix, lines, columns); // TODO Retirar funcao teste
 
-            matrix = dualTableauSolver(matrix, lines, columns);
+            matrix = dualTableauSolver(matrix, lines, columns); // Dual Tableau Simplex algorithm solver
         }
     }
 
