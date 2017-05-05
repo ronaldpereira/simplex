@@ -222,33 +222,37 @@ double **buildAuxiliarToTableau(double **matrix, int lines, int columns)
     return auxiliar;
 }
 
-void unlimitedCertificate(double **matrix, int lines, int columns, int base)
+void unlimitedCertificate(double **matrix, int lines, int columns, int base, int *bases)
 {
-    int i, j;
+    int i, j, k;
 
     printf("PL ilimitada, aqui esta um certificado {{");
     for(j = lines-1; j < columns-lines; j++)
     {
-        if(matrix[0][j] == 0)
+        for(k = 0; k < lines-1; k++)
         {
-            for(i = 1; i < lines; i++)
+            if(j == bases[k])
             {
-                if(matrix[i][j] == 1)
+                for(i = 1; i < lines; i++)
                 {
-                    if(matrix[i][base] == 0)
-                        printf("0");
-                    else if((matrix[i][base] - (int)matrix[i][base]) == 0)
-                        printf("%.0lf", -1*matrix[i][base]);
-                    else
-                        printf("%.3lf", -1*matrix[i][base]);
+                    if(matrix[i][j] == 1)
+                    {
+                        if(matrix[i][base] == 0)
+                            printf("0");
+                        else if((matrix[i][base] - (int)matrix[i][base]) == 0)
+                            printf("%.0lf", -1*matrix[i][base]);
+                        else
+                            printf("%.3lf", -1*matrix[i][base]);
+                    }
                 }
+                break;
             }
         }
 
-        else if(j == base)
-        printf("1");
+        if(j == base)
+            printf("1");
 
-        else if(matrix[0][j] != 0)
+        else if(k == lines-1)
             printf("0");
 
         if(j < columns-lines-1)
@@ -328,7 +332,6 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
 
     while(1)
     {
-        printf("bases %d %d\n", bases[0],bases[1]);
         if(mode == 2)
             printLineMatrix(matrix, lines, columns);
 
@@ -355,7 +358,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
             }
             if(numberofnegatives == lines-1 && mode == 1) // Unlimited LP
             {
-                unlimitedCertificate(matrix, lines, columns, base);
+                unlimitedCertificate(matrix, lines, columns, base, bases);
                 return matrix;
             }
 
