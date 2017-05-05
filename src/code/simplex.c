@@ -182,6 +182,46 @@ double **buildTableau(double **matrix, int *lines, int *columns)
 
 // void unviableCertificate()
 
+double **primalTableauSolver(double **matrix, int lines, int columns, int mode);
+
+double **buildAuxiliarToTableau(double **matrix, int lines, int columns)
+{
+    int i, j;
+    double **auxiliar;
+
+    printf("oi\n");
+    columns += lines;
+
+    auxiliar = (double**) calloc(lines,sizeof(double*));
+    for (i = 0; i < lines; i++)
+        auxiliar[i] = (double*) calloc(columns,sizeof(double*));
+
+    for(j = 0; j < columns; j++)
+    {
+        for(i = 0; i < lines; i++)
+        {
+            if(j < columns-lines-1)
+                auxiliar[i][j] = matrix[i][j];
+
+            else if(j == columns-1)
+                auxiliar[i][j] = matrix[i-lines][j-lines];
+
+            //else
+                // TODO Construir identidade com 1 e 0 direto no C^t
+        }
+    }
+
+    for(i = 1; i < lines; i++)
+    {
+        for(j = 0; j < lines; j++)
+            auxiliar[0][j] -= auxiliar[i][j];
+    }
+
+    auxiliar = primalTableauSolver(auxiliar, lines, columns, 1);
+
+    return auxiliar;
+}
+
 void unlimitedCertificate(double **matrix, int lines, int columns, int base)
 {
     int i, j;
@@ -219,34 +259,37 @@ void unlimitedCertificate(double **matrix, int lines, int columns, int base)
     printf("}\n");
 }
 
-void viableSolution(double **matrix, int lines, int columns)
+void viableSolution(double **matrix, int lines, int columns, int *bases)
 {
-    int i, j;
+    int i, j, k;
 
     printf("Solucao otima x = {{");
     for(j = lines-1; j < columns-lines; j++)
     {
-        if(matrix[0][j] != 0)
-            printf("0");
-
-        else
+        for(k = 0; k < lines-1; k++)
         {
-            for(i = 1; i < lines; i++)
+            if(j == bases[k])
             {
-                if(matrix[i][j] == 1)
+                for(i = 1; i < lines; i++)
                 {
-                    if((matrix[i][columns-1] - (int)matrix[i][columns-1]) == 0)
-                        printf("%.0lf", matrix[i][columns-1]);
-                    else
-                        printf("%.3lf", matrix[i][columns-1]);
+                    if(matrix[i][j] == 1)
+                    {
+                        if((matrix[i][columns-1] - (int)matrix[i][columns-1]) == 0)
+                            printf("%.0lf", matrix[i][columns-1]);
+                        else
+                            printf("%.3lf", matrix[i][columns-1]);
+                    }
                 }
+                break;
             }
         }
+            if(k == lines-1)
+                printf("0");
 
-        if(j < columns-lines-1)
-            printf(",");
-        else
-            printf("}");
+            if(j < columns-lines-1)
+                printf(",");
+            else
+                printf("}");
     }
 
     printf("}, com valor objetivo ");
@@ -275,11 +318,17 @@ void viableSolution(double **matrix, int lines, int columns)
 
 double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
 {
-    int i, j, base, pivot, numberofnegatives, ispositive, unviableflag;
+    int i, j, base, bases[lines-1], pivot, numberofnegatives, ispositive, unviableflag;
     double minimum, aux, linedivider, multiplier;
+
+    for(i = lines-2, j = 2; i >= 0; i--, j++)
+    {
+        bases[i] = columns-j;
+    }
 
     while(1)
     {
+        printf("bases %d %d\n", bases[0],bases[1]);
         if(mode == 2)
             printLineMatrix(matrix, lines, columns);
 
@@ -331,7 +380,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
             if(unviableflag && mode == 1)
             {
                 printf("unviable\n");
-                // matrix = buildAuxiliarToTableau(matrix, lines, columns);
+                matrix = buildAuxiliarToTableau(matrix, lines, columns);
                 // unviableCertificate(matrix, lines, columns, base);
                 return matrix;
             }
@@ -352,6 +401,8 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
         }
         if(mode == 1)
             printf("[%d] [%d] = %.4lf\n", pivot, base, matrix[pivot][base]);
+
+        bases[pivot-1] = base;
 
         linedivider = matrix[pivot][base];
 
@@ -376,7 +427,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode)
     }
 
     if(mode == 1)
-        viableSolution(matrix, lines, columns);
+        viableSolution(matrix, lines, columns, bases);
 
     return matrix;
 }
@@ -437,43 +488,6 @@ double **dualTableauSolver(double **matrix, int lines, int columns)
     printLineMatrix(matrix, lines, columns);
 
     return matrix;
-}
-
-double **buildAuxiliarToTableau(double **matrix, int lines, int columns)
-{
-    int i, j;
-    double **auxiliar;
-
-    columns += lines;
-
-    auxiliar = (double**) calloc(lines,sizeof(double*));
-    for (i = 0; i < lines; i++)
-        auxiliar[i] = (double*) calloc(columns,sizeof(double*));
-
-    for(j = 0; j < columns; j++)
-    {
-        for(i = 0; i < lines; i++)
-        {
-            if(j < columns-lines-1)
-                auxiliar[i][j] = matrix[i][j];
-
-            else if(j == columns-1)
-                auxiliar[i][j] = matrix[i-lines][j-lines];
-
-            //else
-                // TODO Construir identidade com 1 e 0 direto no C^t
-        }
-    }
-
-    for(i = 1; i < lines; i++)
-    {
-        for(j = 0; j < lines; j++)
-            auxiliar[0][j] -= auxiliar[i][j];
-    }
-
-    auxiliar = primalTableauSolver(auxiliar, lines, columns, 1);
-
-    return auxiliar;
 }
 
 int main()
