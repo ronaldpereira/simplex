@@ -229,9 +229,9 @@ void unviableCertificate(double **matrix, int lines) // Function that outputs th
         if(matrix[0][i] == 0)
             printf("0");
         else if((matrix[0][i] - (int)matrix[0][i]) == 0)
-            printf("%.0lf", -1*matrix[0][i]);
+            printf("%.0lf", matrix[0][i]);
         else
-            printf("%.3lf", -1*matrix[0][i]);
+            printf("%.3lf", matrix[0][i]);
 
         if(i < lines-2)
             printf(",");
@@ -437,6 +437,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode) 
                     matrix[i][j] += multiplier * matrix[pivot][j];
             }
         }
+        printMatrix(matrix, lines, columns);
     }
 
     if(mode == 1)
