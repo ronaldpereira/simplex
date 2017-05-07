@@ -4,19 +4,27 @@
 #include <string.h>
 #include <limits.h>
 
-void printMatrix(double **matrix, int lines, int columns) // TODO Retirar funcao teste
+double **matrixAllocation(int lines, int columns) // Function to allocate the matrix
 {
-    int i, j;
+    int i;
+    double **matrix;
+
+    matrix = (double**) calloc(lines,sizeof(double*));
+    for(i = 0; i < lines; i++)
+        matrix[i] = (double*) calloc(columns, sizeof(double*));
+
+    return matrix;
+}
+
+double **matrixDisallocation(double **matrix, int lines) // Function to disallocate the matrix
+{
+    int i;
 
     for(i = 0; i < lines; i++)
-    {
-        for(j = 0; j < columns; j++)
-        {
-            printf("%.3lf ", matrix[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+        free(matrix[i]);
+    free(matrix);
+
+    return NULL;
 }
 
 void printLineMatrix(double **matrix, int lines, int columns) // Function to print the matrix in one line
@@ -61,29 +69,6 @@ bool detectPrimalDual(char input) // Function to detect if, in mode 2, is primal
         mode = 1;
 
     return mode;
-}
-
-double **matrixAllocation(int lines, int columns) // Function to allocate the matrix
-{
-    int i;
-    double **matrix;
-
-    matrix = (double**) calloc(lines,sizeof(double*));
-    for(i = 0; i < lines; i++)
-        matrix[i] = (double*) calloc(columns, sizeof(double*));
-
-    return matrix;
-}
-
-double **matrixDisallocation(double **matrix, int lines) // Function to disallocate the matrix
-{
-    int i;
-
-    for(i = 0; i < lines; i++)
-        free(matrix[i]);
-    free(matrix);
-
-    return NULL;
 }
 
 double **matrixBuilder(char *input, double **matrix) // Function that converts the input line matrix to a two-dimension matrix
@@ -212,7 +197,6 @@ double **buildAuxiliarToTableau(double **matrix, int *lines, int *columns) // Fu
         for(j = 0; j < (*columns); j++)
             auxiliar[0][j] -= auxiliar[i][j];
     }
-    printMatrix(auxiliar,(*lines),(*columns)); // TODO Retirar funcao teste
 
     matrixDisallocation(matrix, *lines);
 
@@ -437,7 +421,6 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode) 
                     matrix[i][j] += multiplier * matrix[pivot][j];
             }
         }
-        printMatrix(matrix, lines, columns);
     }
 
     if(mode == 1)
@@ -446,7 +429,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode) 
     return matrix;
 }
 
-double **dualTableauSolver(double **matrix, int lines, int columns) // Function that solves the given LP in the dual Tableau algorithm, using Bland's Law
+double **dualTableauSolver(double **matrix, int lines, int columns) // Function that solves the given LP in the Dual Tableau algorithm, using Bland's Law
 {
     int i, j, base, pivot;
     double minimum, aux, linedivider, multiplier;
@@ -506,11 +489,11 @@ double **dualTableauSolver(double **matrix, int lines, int columns) // Function 
 
 int main()
 {
-    char *input;
-    int lines, columns;
-    double **matrix;
-    int mode, primaldual;
-    char option;
+    char *input; // Input matrix
+    int lines, columns; // Matrix dimensions
+    double **matrix; // Two-dimension array to represent the LP
+    int mode, primaldual; // Modes of the execution
+    char option; // Primal or dual mode of execution
 
     printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\n");
     printf("Insert a mode:\n> ");
@@ -541,15 +524,11 @@ int main()
 
     matrixBuilder(input, matrix); // Function to build the matrix from the input file
 
-    printMatrix(matrix, lines, columns); // TODO Retirar funcao teste
-
     /* First mode implementation */
 
     if(mode == 1)
     {
         matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
-
-        printMatrix(matrix, lines, columns); // TODO Retirar funcao teste
 
         matrix = primalTableauSolver(matrix, lines, columns, mode); // Primal Tableau Simplex algorithm solver
     }
@@ -562,16 +541,12 @@ int main()
         {
             matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-            printMatrix(matrix, lines, columns); // TODO Retirar funcao teste
-
             matrix = primalTableauSolver(matrix, lines, columns, mode); // Primal Tableau Simplex algorithm solver
         }
 
         else if(primaldual == 1) // Dual solve mode
         {
             matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
-
-            printMatrix(matrix, lines, columns); // TODO Retirar funcao teste
 
             matrix = dualTableauSolver(matrix, lines, columns); // Dual Tableau Simplex algorithm solver
         }
