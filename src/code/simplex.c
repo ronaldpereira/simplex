@@ -16,46 +16,35 @@ double **matrixAllocation(int lines, int columns) // Function to allocate the ma
     return matrix;
 }
 
-double **matrixDisallocation(double **matrix, int lines) // Function to disallocate the matrix
-{
-    int i;
-
-    for(i = 0; i < lines; i++)
-        free(matrix[i]);
-    free(matrix);
-
-    return NULL;
-}
-
-void printLineMatrix(double **matrix, int lines, int columns) // Function to print the matrix in one line
+void printLineMatrix(double **matrix, int lines, int columns, FILE* output) // Function to print the matrix in one line
 {
     int i, j;
 
-    printf("{");
+    fprintf(output, "{");
     for(i = 0; i < lines; i++)
     {
         for(j = 0; j < columns; j++)
         {
             if(j == 0)
-                printf("{");
+                fprintf(output, "{");
 
             if(matrix[i][j] == 0)
-                printf("0");
+                fprintf(output, "0");
             else if((matrix[i][j] - (int)matrix[i][j]) == 0) // If the cell is a integer number, do not print it with .3lf
-                printf("%.0lf", matrix[i][j]);
+                fprintf(output, "%.0lf", matrix[i][j]);
             else
-                printf("%.3lf", matrix[i][j]);
+                fprintf(output, "%.5lf", matrix[i][j]);
 
 
             if(j < columns-1)
-                printf(",");
+                fprintf(output, ",");
             else
-                printf("}");
+                fprintf(output, "}");
         }
         if(i < lines-1)
-            printf(",");
+            fprintf(output, ",");
     }
-    printf("}\n");
+    fprintf(output, "}\n");
 }
 
 bool detectPrimalDual(char input) // Function to detect if, in mode 2, is primal or dual solving mode
@@ -160,75 +149,63 @@ double **buildTableau(double **matrix, int *lines, int *columns) // Function tha
         }
     }
 
-    matrixDisallocation(matrix, *lines);
-
     return tableau;
 }
 
-double **buildAuxiliarToTableau(double **matrix, int *lines, int *columns) // Function that builds the auxiliar matrix in Tableau
+double **buildAuxiliarToTableau(double **matrix, int lines, int columns) // Function that builds the auxiliar matrix in Tableau
 {
     int i, j;
     double **auxiliar;
 
-    *columns += (*lines)-1;
+    auxiliar = matrixAllocation(lines, columns);
 
-    auxiliar = matrixAllocation(*lines, *columns);
-
-    for(j = 0; j < *columns; j++)
+    for(j = 0; j < columns; j++)
     {
-        for(i = 0; i < *lines; i++)
+        for(i = 0; i < lines; i++)
         {
-            if(j < (*columns)-(*lines) && i != 0)
+            if(j < columns-1 && i != 0)
                 auxiliar[i][j] = matrix[i][j];
 
-            else if(j == (*columns)-1)
-                auxiliar[i][j] = matrix[i][j-(*lines)+1];
+            else if(j == columns-1)
+                auxiliar[i][j] = matrix[i][j];
         }
     }
 
-    for(i = (*lines)-1, j = (*columns)-2; i > 0; i--, j--)
+    for(i = 1; i < lines; i++)
     {
-        auxiliar[i][j] = 1;
-        auxiliar[0][j] = 1;
-    }
-
-    for(i = 1; i < (*lines); i++)
-    {
-        for(j = 0; j < (*columns); j++)
+        for(j = 0; j < columns; j++)
             auxiliar[0][j] -= auxiliar[i][j];
     }
-
-    matrixDisallocation(matrix, *lines);
 
     return auxiliar;
 }
 
-void unviableCertificate(double **matrix, int lines) // Function that outputs the unviable certificate
+void unviableCertificate(double **matrix, int lines, FILE *output) // Function that outputs the unviable certificate
 {
     int i;
 
-    printf("PL inviavel, aqui esta um certificado {{");
+    fprintf(output, "PL inviavel, aqui esta um certificado {");
     for(i = 0; i < lines-1; i++)
     {
         if(matrix[0][i] == 0)
-            printf("0");
+            fprintf(output, "0");
         else if((matrix[0][i] - (int)matrix[0][i]) == 0)
-            printf("%.0lf", matrix[0][i]);
+            fprintf(output, "%.0lf", matrix[0][i]);
         else
-            printf("%.3lf", matrix[0][i]);
+            fprintf(output, "%.5lf", matrix[0][i]);
 
         if(i < lines-2)
-            printf(",");
+            fprintf(output, ",");
     }
 
-    printf("}}\n");
+    fprintf(output, "}\n");
 }
 
-void unlimitedCertificate(double **matrix, int lines, int columns, int base, int *bases) // Function that outputs the unlimited certificate
+void unlimitedCertificate(double **matrix, int lines, int columns, int base, int *bases, FILE *output) // Function that outputs the unlimited certificate
 {
     int i, j, k;
 
-    printf("PL ilimitada, aqui esta um certificado {{");
+    fprintf(output, "PL ilimitada, aqui esta um certificado {");
     for(j = lines-1; j < columns-lines; j++)
     {
         for(k = 0; k < lines-1; k++)
@@ -240,11 +217,11 @@ void unlimitedCertificate(double **matrix, int lines, int columns, int base, int
                     if(matrix[i][j] == 1)
                     {
                         if(matrix[i][base] == 0)
-                            printf("0");
+                            fprintf(output, "0");
                         else if((matrix[i][base] - (int)matrix[i][base]) == 0)
-                            printf("%.0lf", -1*matrix[i][base]);
+                            fprintf(output, "%.0lf", -1*matrix[i][base]);
                         else
-                            printf("%.3lf", -1*matrix[i][base]);
+                            fprintf(output, "%.5lf", -1*matrix[i][base]);
                     }
                 }
                 break;
@@ -252,22 +229,22 @@ void unlimitedCertificate(double **matrix, int lines, int columns, int base, int
         }
 
         if(j == base)
-            printf("1");
+            fprintf(output, "1");
 
         else if(k == lines-1)
-            printf("0");
+            fprintf(output, "0");
 
         if(j < columns-lines-1)
-            printf(",");
+            fprintf(output, ",");
     }
-    printf("}}\n");
+    fprintf(output, "}\n");
 }
 
-void viableSolution(double **matrix, int lines, int columns, int *bases) // Function that outputs the optimum viable solution, the objective value and the dual solution
+void viableSolution(double **matrix, int lines, int columns, int *bases, FILE *output) // Function that outputs the optimum viable solution, the objective value and the dual solution
 {
     int i, j, k;
 
-    printf("Solucao otima x = {{");
+    fprintf(output, "Solucao otima x = {");
     for(j = lines-1; j < columns-lines; j++)
     {
         for(k = 0; k < lines-1; k++)
@@ -279,50 +256,46 @@ void viableSolution(double **matrix, int lines, int columns, int *bases) // Func
                     if(matrix[i][j] == 1)
                     {
                         if((matrix[i][columns-1] - (int)matrix[i][columns-1]) == 0)
-                            printf("%.0lf", matrix[i][columns-1]);
+                            fprintf(output, "%.0lf", matrix[i][columns-1]);
                         else
-                            printf("%.3lf", matrix[i][columns-1]);
+                            fprintf(output, "%.5lf", matrix[i][columns-1]);
                     }
                 }
                 break;
             }
         }
             if(k == lines-1)
-                printf("0");
+                fprintf(output, "0");
 
             if(j < columns-lines-1)
-                printf(",");
-            else
-                printf("}");
+                fprintf(output, ",");
     }
 
-    printf("}, com valor objetivo ");
+    fprintf(output, "}, com valor objetivo ");
 
     if((matrix[0][columns-1] - (int)matrix[0][columns-1]) == 0)
-        printf("%.0lf", matrix[0][columns-1]);
+        fprintf(output, "%.0lf", matrix[0][columns-1]);
     else
-        printf("%.3lf", matrix[0][columns-1]);
+        fprintf(output, "%.5lf", matrix[0][columns-1]);
 
-    printf(", e solucao dual y = {{");
+    fprintf(output, ", e solucao dual y = {");
 
     for(i = 0; i < lines-1; i++)
     {
         if((matrix[0][i] - (int)matrix[0][i]) == 0)
-            printf("%.0lf", matrix[0][i]);
+            fprintf(output, "%.0lf", matrix[0][i]);
         else
-            printf("%.3lf", matrix[0][i]);
+            fprintf(output, "%.5lf", matrix[0][i]);
 
         if(i < lines-2)
-            printf(",");
-        else
-            printf("}");
+            fprintf(output, ",");
     }
-    printf("}\n");
+    fprintf(output, "}\n");
 }
 
-double **primalTableauSolver(double **matrix, int lines, int columns, int mode) // Function that solves the given LP in the primal Tableau algorithm, using Bland's Law
+double **primalTableauSolver(double **matrix, int lines, int columns, int mode, FILE *output) // Function that solves the given LP in the primal Tableau algorithm, using Bland's Law
 {
-    int i, j, base, bases[lines-1], pivot, numberofnegatives, ispositive, unviableflag;
+    int i, j, base, bases[lines-1], pivot, numberofnegatives;
     double minimum, aux, linedivider, multiplier;
 
     for(i = lines-2, j = 2; i >= 0; i--, j++)
@@ -333,7 +306,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode) 
     while(1)
     {
         if(mode == 2)
-            printLineMatrix(matrix, lines, columns);
+            printLineMatrix(matrix, lines, columns, output);
 
         base = 0;
         for(i = lines-1; i < columns-1; i++)
@@ -358,34 +331,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode) 
             }
             if(numberofnegatives == lines-1 && mode == 1) // Unlimited LP
             {
-                unlimitedCertificate(matrix, lines, columns, base, bases);
-                return matrix;
-            }
-
-            unviableflag = 0;
-            for(i = 1; i < lines; i++) // Unviable test
-            {
-                if(matrix[i][columns-1] < 0) // b is negative
-                {
-                    ispositive = 0;
-                    for(j = lines-1; j < columns-1; j++)
-                    {
-                        if(matrix[i][j] >= 0)
-                            ispositive++;
-                    }
-                    if(ispositive == (columns-lines))
-                    {
-                        unviableflag = 1;
-                        for(j = 0; j < columns; j++)
-                            matrix[i][j] *= -1;
-                    }
-                }
-            }
-            if(unviableflag && mode == 1)
-            {
-                matrix = buildAuxiliarToTableau(matrix, &lines, &columns);
-                matrix = primalTableauSolver(matrix, lines, columns, 3);
-                unviableCertificate(matrix, lines);
+                unlimitedCertificate(matrix, lines, columns, base, bases, output);
                 return matrix;
             }
         }
@@ -424,19 +370,19 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode) 
     }
 
     if(mode == 1)
-        viableSolution(matrix, lines, columns, bases);
+        viableSolution(matrix, lines, columns, bases, output);
 
     return matrix;
 }
 
-double **dualTableauSolver(double **matrix, int lines, int columns) // Function that solves the given LP in the Dual Tableau algorithm, using Bland's Law
+double **dualTableauSolver(double **matrix, int lines, int columns, FILE *output) // Function that solves the given LP in the Dual Tableau algorithm, using Bland's Law
 {
     int i, j, base, pivot;
     double minimum, aux, linedivider, multiplier;
 
     while(1)
     {
-        printLineMatrix(matrix, lines, columns);
+        printLineMatrix(matrix, lines, columns, output);
 
         base = 0;
         for(i = 1; i < lines; i++)
@@ -482,47 +428,98 @@ double **dualTableauSolver(double **matrix, int lines, int columns) // Function 
             }
         }
     }
-    printLineMatrix(matrix, lines, columns);
+    printLineMatrix(matrix, lines, columns, output);
 
     return matrix;
 }
 
+double **originalIsViable(double **matrix, double *C, int lines, int columns) // Function that overwrite the actual auxiliar C^t for the original C^t in Tableaus
+{
+    int i;
+
+    for(i = lines-1; i < columns-1; i++)
+        matrix[0][i] = C[i-(lines-1)];
+
+    return matrix;
+}
+
+void detectNeedOfAuxiliar(double **matrix, int lines, int columns, int mode, FILE *output)
+{
+    double *Coriginal;
+    bool unviableflag = 0;
+    int i, j;
+
+   Coriginal = (double*) calloc((columns-(lines-2)),sizeof(double));
+
+    for(i = 0; i < lines; i++)
+    {
+        if(matrix[i][columns-1] < 0)
+        {
+            unviableflag = 1;
+            for(j = 0; j < columns; j++)
+                matrix[i][j] *= -1;
+        }
+    }
+
+    if(unviableflag == 1)
+    {
+        for(j = lines-1; j < columns-(lines-2); j++) // Saves the original C
+            Coriginal[j-(lines-1)] = matrix[0][j];
+
+        matrix = buildAuxiliarToTableau(matrix, lines, columns); // Function that builds the auxiliar
+
+        matrix = primalTableauSolver(matrix, lines, columns, 3, output); // Primal Tableau Simplex algorithm solver
+
+        if(matrix[0][columns-1] < 0)
+            unviableCertificate(matrix, lines, output); // Outputs the unviable certificate
+
+        else
+        {
+            matrix = originalIsViable(matrix, Coriginal, lines, columns); // Objective value is 0, so the original is viable
+
+            matrix = primalTableauSolver(matrix, lines, columns, mode, output); // Primal Tableau Simplex algorithm solver
+        }
+    }
+
+    else
+        matrix = primalTableauSolver(matrix, lines, columns, mode, output); // Primal Tableau Simplex algorithm solver
+}
+
 int main()
 {
-    char *input; // Input matrix
+    FILE *input, *output; // Input and output file
+    char *matrixinput; // Input matrix
     int lines, columns; // Matrix dimensions
     double **matrix; // Two-dimension array to represent the LP
     int mode, primaldual; // Modes of the execution
     char option; // Primal or dual mode of execution
 
-    printf("Welcome to C-Implex (my implementation of Simplex algorithm using Bland's Law)\n\nAuthor: Ronald Davi Rodrigues Pereira\nBS student of Computer Science in Federal University of Minas Gerais\n\nOption Menu:\n\t1 - Apply the Simplex algorithm (using Bland's Law) on a Linear Programming and outputs the optimized solution or a certificate of illimitability or inviability\n\t2 - Given a viable and limited Linear Programming, it consults the user to use the primal or dual C-Implex implementation and outputs the solution\n\n");
-    printf("Insert a mode:\n> ");
-    scanf("modo %d", &mode);
-    getc(stdin); // Gets the '\n' token from input
+    input = fopen("../test/input.txt", "r"); // Opens the input file
+    output = fopen("../test/output.txt", "w"); // Opens the output file
+
+    fscanf(input, "modo %d", &mode);
+    getc(input); // Gets the '\n' token from input
 
     if(mode == 2)
     {
-        printf("Insert the mode (P for primal / D for dual):\n> ");
-        scanf("%c", &option);
-        getc(stdin); // Gets the '\n' token from input
+        fscanf(input, "%c", &option);
+        getc(input); // Gets the '\n' token from input
         primaldual = detectPrimalDual(option);
     }
 
-    printf("Number of lines:\n> ");
-    scanf("%d", &lines);
-    getc(stdin); // Gets the '\n' token from input
-    printf("Number of columns:\n> ");
-    scanf("%d", &columns);
-    getc(stdin); // Gets the '\n' token from input
+    fscanf(input, "%d", &lines);
+    getc(input); // Gets the '\n' token from input
+    fscanf(input, "%d", &columns);
+    getc(input); // Gets the '\n' token from input
     lines++;
     columns++;
 
     matrix = matrixAllocation(lines, columns); // Function to allocate the matrix
 
-    printf("Insert the matrix input:\n> ");
-    scanf("%s", input);
+    matrixinput = (char*) malloc(sizeof(char));
+    fscanf(input, "%s", matrixinput);
 
-    matrixBuilder(input, matrix); // Function to build the matrix from the input file
+    matrixBuilder(matrixinput, matrix); // Function to build the matrix from the input file
 
     /* First mode implementation */
 
@@ -530,7 +527,7 @@ int main()
     {
         matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-        matrix = primalTableauSolver(matrix, lines, columns, mode); // Primal Tableau Simplex algorithm solver
+        detectNeedOfAuxiliar(matrix, lines, columns, mode, output); // Function to detect if the LP input needs an auxiliar
     }
 
     /* Second mode implementation */
@@ -541,18 +538,19 @@ int main()
         {
             matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-            matrix = primalTableauSolver(matrix, lines, columns, mode); // Primal Tableau Simplex algorithm solver
+            detectNeedOfAuxiliar(matrix, lines, columns, mode, output); // Function to detect if the LP input needs an auxiliar
         }
 
         else if(primaldual == 1) // Dual solve mode
         {
             matrix = buildTableau(matrix, &lines, &columns); // Function that builds the Tableau matrix
 
-            matrix = dualTableauSolver(matrix, lines, columns); // Dual Tableau Simplex algorithm solver
+            matrix = dualTableauSolver(matrix, lines, columns, output); // Dual Tableau Simplex algorithm solver
         }
     }
 
-    matrixDisallocation(matrix, lines); // Function to free the allocated space for the matrix
+    fclose(input);
+    fclose(output);
 
     return 0;
 }

@@ -2,7 +2,7 @@ all:
 	gcc -Wall -Wextra -g simplex.c -o simplex.exe
 
 run:
-	./simplex.exe < ../test/input.txt > ../test/output.txt
+	./simplex.exe
 
 clean:
 	rm -rf simplex
@@ -11,7 +11,4 @@ test:
 	make all && make run && make clean
 
 test2:
-	make all && ./simplex.exe < ../test/input.txt && make clean
-
-# gdb:
-#	start < ../test/input.txt > ../test/output.txt
+	make all && ./simplex.exe && make clean
