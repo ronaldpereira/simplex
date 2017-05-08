@@ -30,7 +30,7 @@ void printLineMatrix(double **matrix, int lines, int columns, FILE* output) // F
 
             if(matrix[i][j] == 0)
                 fprintf(output, "0");
-            else if((matrix[i][j] - (int)matrix[i][j]) == 0) // If the cell is a integer number, do not print it with .3lf
+            else if((matrix[i][j] - (int)matrix[i][j]) == 0) // If the cell is a integer number, do not print it with decimal part
                 fprintf(output, "%.0lf", matrix[i][j]);
             else
                 fprintf(output, "%.5lf", matrix[i][j]);
