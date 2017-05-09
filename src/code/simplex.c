@@ -293,15 +293,10 @@ void viableSolution(double **matrix, int lines, int columns, int *bases, FILE *o
     fprintf(output, "}\n");
 }
 
-double **primalTableauSolver(double **matrix, int lines, int columns, int mode, FILE *output) // Function that solves the given LP in the primal Tableau algorithm, using Bland's Law
+double **primalTableauSolver(double **matrix, int lines, int columns, int mode, int **bases, FILE *output) // Function that solves the given LP in the primal Tableau algorithm, using Bland's Law
 {
-    int i, j, base, bases[lines-1], pivot, numberofnegatives;
+    int i, j, base, pivot;
     double minimum, aux, linedivider, multiplier;
-
-    for(i = lines-2, j = 2; i >= 0; i--, j++)
-    {
-        bases[i] = columns-j;
-    }
 
     while(1)
     {
@@ -311,7 +306,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode, 
         base = 0;
         for(i = lines-1; i < columns-1; i++)
         {
-            if(matrix[0][i] < 0)
+            if(matrix[0][i] < -0.000001)
             {
                 base = i;
                 break;
@@ -321,17 +316,17 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode, 
         if(base == 0) // C^t >= 0
             break;
 
-        else if(base != 0) // Unlimited and Unviable LP test
+        else if(base != 0) // Unlimited LP test
         {
-            numberofnegatives = 0; // Unlimited test
             for(i = 1; i < lines; i++)
             {
-                if(matrix[i][base] <= 0)
-                    numberofnegatives++;
+                if(matrix[i][base] > 0)
+                    break;
             }
-            if(numberofnegatives == lines-1 && mode == 1) // Unlimited LP
+
+            if(i == lines && mode == 1) // Unlimited LP
             {
-                unlimitedCertificate(matrix, lines, columns, base, bases, output);
+                unlimitedCertificate(matrix, lines, columns, base, *bases, output);
                 return matrix;
             }
         }
@@ -350,7 +345,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode, 
             }
         }
 
-        bases[pivot-1] = base;
+        (*bases)[pivot-1] = base;
 
         linedivider = matrix[pivot][base];
 
@@ -370,7 +365,7 @@ double **primalTableauSolver(double **matrix, int lines, int columns, int mode, 
     }
 
     if(mode == 1)
-        viableSolution(matrix, lines, columns, bases, output);
+        viableSolution(matrix, lines, columns, *bases, output);
 
     return matrix;
 }
@@ -402,7 +397,7 @@ double **dualTableauSolver(double **matrix, int lines, int columns, FILE *output
         {
             if(matrix[base][j] < 0)
             {
-                aux = (matrix[0][j] / abs(matrix[base][j]));
+                aux = (matrix[0][j] / (-1*(matrix[base][j])));
 
                 if(aux < minimum)
                 {
@@ -416,6 +411,8 @@ double **dualTableauSolver(double **matrix, int lines, int columns, FILE *output
 
         for(i = 0; i < columns; i++)
             matrix[base][i] /= linedivider;
+
+        printLineMatrix(matrix, lines, columns, output);
 
         for(i = 0; i < lines; i++)
         {
@@ -446,43 +443,48 @@ double **originalIsViable(double **matrix, double *C, int lines, int columns) //
 void detectNeedOfAuxiliar(double **matrix, int lines, int columns, int mode, FILE *output)
 {
     double *Coriginal;
-    bool unviableflag = 0;
+    bool auxiliarflag = 0;
     int i, j;
+    int *bases;
 
-   Coriginal = (double*) calloc((columns-(lines-2)),sizeof(double));
+    bases = (int*) calloc(lines-1,sizeof(int));
+    Coriginal = (double*) calloc((columns-(lines-2)),sizeof(double));
+
+    for(i = lines-2, j = 2; i >= 0; i--, j++)
+        bases[i] = columns-j;
 
     for(i = 0; i < lines; i++)
     {
         if(matrix[i][columns-1] < 0)
         {
-            unviableflag = 1;
+            auxiliarflag = 1;
             for(j = 0; j < columns; j++)
                 matrix[i][j] *= -1;
         }
     }
 
-    if(unviableflag == 1)
+    if(auxiliarflag == 1)
     {
         for(j = lines-1; j < columns-(lines-2); j++) // Saves the original C
             Coriginal[j-(lines-1)] = matrix[0][j];
 
         matrix = buildAuxiliarToTableau(matrix, lines, columns); // Function that builds the auxiliar
 
-        matrix = primalTableauSolver(matrix, lines, columns, 3, output); // Primal Tableau Simplex algorithm solver
+        matrix = primalTableauSolver(matrix, lines, columns, 3, &bases, output); // Primal Tableau Simplex algorithm solver
 
-        if(matrix[0][columns-1] < 0)
+        if(matrix[0][columns-1] < -0.000001)
             unviableCertificate(matrix, lines, output); // Outputs the unviable certificate
 
         else
         {
             matrix = originalIsViable(matrix, Coriginal, lines, columns); // Objective value is 0, so the original is viable
 
-            matrix = primalTableauSolver(matrix, lines, columns, mode, output); // Primal Tableau Simplex algorithm solver
+            matrix = primalTableauSolver(matrix, lines, columns, mode, &bases, output); // Primal Tableau Simplex algorithm solver
         }
     }
 
     else
-        matrix = primalTableauSolver(matrix, lines, columns, mode, output); // Primal Tableau Simplex algorithm solver
+        matrix = primalTableauSolver(matrix, lines, columns, mode, &bases, output); // Primal Tableau Simplex algorithm solver
 }
 
 int main(int argc, char *argv[])

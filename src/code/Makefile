@@ -2,7 +2,7 @@ all:
 	gcc -Wall -Wextra -g simplex.c -o simplex.exe
 
 run:
-	./simplex.exe
+	./simplex.exe ../test/input.txt ../test/output.txt
 
 clean:
 	rm -rf *.exe
