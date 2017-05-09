@@ -5,7 +5,7 @@ run:
 	./simplex.exe
 
 clean:
-	rm -rf simplex
+	rm -rf *.exe
 
 test:
 	make all && make run && make clean

@@ -485,7 +485,7 @@ void detectNeedOfAuxiliar(double **matrix, int lines, int columns, int mode, FIL
         matrix = primalTableauSolver(matrix, lines, columns, mode, output); // Primal Tableau Simplex algorithm solver
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     FILE *input, *output; // Input and output file
     char *matrixinput; // Input matrix
@@ -494,8 +494,9 @@ int main()
     int mode, primaldual; // Modes of the execution
     char option; // Primal or dual mode of execution
 
-    input = fopen("../test/input.txt", "r"); // Opens the input file
-    output = fopen("../test/output.txt", "w"); // Opens the output file
+    matrixinput = (char*) malloc(INT_MAX*sizeof(char));
+    input = fopen(argv[1], "r"); // Opens the input file
+    output = fopen(argv[2], "w"); // Opens the output file
 
     fscanf(input, "modo %d", &mode);
     getc(input); // Gets the '\n' token from input
@@ -516,7 +517,6 @@ int main()
 
     matrix = matrixAllocation(lines, columns); // Function to allocate the matrix
 
-    matrixinput = (char*) malloc(sizeof(char));
     fscanf(input, "%s", matrixinput);
 
     matrixBuilder(matrixinput, matrix); // Function to build the matrix from the input file
