@@ -430,12 +430,22 @@ double **dualTableauSolver(double **matrix, int lines, int columns, FILE *output
     return matrix;
 }
 
-double **originalIsViable(double **matrix, double *C, int lines, int columns) // Function that overwrite the actual auxiliar C^t for the original C^t in Tableaus
+double **originalIsViable(double **matrix, double *C, int lines, int columns, int *bases) // Function that overwrite the actual auxiliar C^t for the original C^t in Tableaus
 {
-    int i;
+    int i, j;
 
     for(i = lines-1; i < columns-1; i++)
-        matrix[0][i] = C[i-(lines-1)];
+    {
+        for(j = 0; j < lines-1; j++)
+        {
+            if(bases[j] == i)
+                break;
+        }
+        if(j == lines-1)
+            matrix[0][i] = C[i-(lines-1)];
+        else
+            matrix[0][i] = 0;
+    }
 
     return matrix;
 }
@@ -477,7 +487,7 @@ void detectNeedOfAuxiliar(double **matrix, int lines, int columns, int mode, FIL
 
         else
         {
-            matrix = originalIsViable(matrix, Coriginal, lines, columns); // Objective value is 0, so the original is viable
+            matrix = originalIsViable(matrix, Coriginal, lines, columns, bases); // Objective value is 0, so the original is viable
 
             matrix = primalTableauSolver(matrix, lines, columns, mode, &bases, output); // Primal Tableau Simplex algorithm solver
         }
