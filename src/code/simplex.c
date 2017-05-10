@@ -433,18 +433,19 @@ double **dualTableauSolver(double **matrix, int lines, int columns, FILE *output
 double **originalIsViable(double **matrix, double *C, int lines, int columns, int *bases) // Function that overwrite the actual auxiliar C^t for the original C^t in Tableaus
 {
     int i, j;
+    double multiplier;
 
     for(i = lines-1; i < columns-1; i++)
+        matrix[0][i] = C[i-(lines-1)];
+
+    for(i = 1; i < lines; i++)
     {
-        for(j = 0; j < lines-1; j++)
-        {
-            if(bases[j] == i)
-                break;
-        }
-        if(j == lines-1)
-            matrix[0][i] = C[i-(lines-1)];
-        else
-            matrix[0][i] = 0;
+            multiplier = matrix[0][bases[i-1]];
+
+            for(j = 0; j < columns; j++)
+            {
+                matrix[0][j] -= multiplier * matrix[i][j];
+            }
     }
 
     return matrix;
@@ -532,7 +533,7 @@ int main(int argc, char *argv[])
     fscanf(input, "%s", matrixinput);
 
     matrixBuilder(matrixinput, matrix); // Function to build the matrix from the input file
-
+/* code */
     /* First mode implementation */
 
     if(mode == 1)
